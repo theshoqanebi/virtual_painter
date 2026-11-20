@@ -5,7 +5,7 @@ import cv2
 import mediapipe as mp
 from mediapipe.tasks.python import BaseOptions, vision
 
-MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_landmarker.task")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model", "hand_landmarker.task")
 
 HAND_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 4),

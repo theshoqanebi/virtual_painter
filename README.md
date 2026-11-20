@@ -36,7 +36,7 @@ python main.py
 ```
 main.py                  Application window, toolbar and drawing logic
 HandTrackingModule.py    MediaPipe hand detector wrapper
-hand_landmarker.task    MediaPipe hand landmarker model
+model/                   MediaPipe hand landmarker model
 images/                  Toolbar images and app icon
 requirements.txt         Python dependencies
 ```
