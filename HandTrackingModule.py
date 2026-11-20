@@ -1,36 +1,70 @@
-import cv2
-import mediapipe as mp
+import os
 import time
 
+import cv2
+import mediapipe as mp
+from mediapipe.tasks.python import BaseOptions, vision
+
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_landmarker.task")
+
+HAND_CONNECTIONS = [
+    (0, 1), (1, 2), (2, 3), (3, 4),
+    (0, 5), (5, 6), (6, 7), (7, 8),
+    (5, 9), (9, 10), (10, 11), (11, 12),
+    (9, 13), (13, 14), (14, 15), (15, 16),
+    (13, 17), (17, 18), (18, 19), (19, 20),
+    (0, 17),
+]
+
+
 class HandDetector:
-    def __init__(self, mode = False, max_hands = 2, model_complexity=1,
-                 detection_con = 0.5, track_con = 0.5):
+    def __init__(self, mode=False, max_hands=2, model_complexity=1,
+                 detection_con=0.5, track_con=0.5, model_path=MODEL_PATH):
+        # model_complexity kept for backward compatibility (unused by Tasks API)
         self.mode = mode
         self.maxHands = max_hands
-        self.modelComplex = model_complexity
         self.detectionCon = detection_con
         self.trackCon = track_con
-        self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode, self.maxHands, self.modelComplex, self.detectionCon, self.trackCon)
-        self.mpDraw = mp.solutions.drawing_utils
+        options = vision.HandLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=model_path),
+            running_mode=vision.RunningMode.VIDEO,
+            num_hands=max_hands,
+            min_hand_detection_confidence=detection_con,
+            min_hand_presence_confidence=track_con,
+            min_tracking_confidence=track_con,
+        )
+        self.landmarker = vision.HandLandmarker.create_from_options(options)
         self.tipIds = [4, 8, 12, 16, 20]
-    def find_hands(self, img, draw = True):
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        self.results = self.hands.process(img_rgb)
+        self.lmList = []
+        self.results = None
+        self._lastTs = 0
 
-        if self.results.multi_hand_landmarks:
-            for handLms in self.results.multi_hand_landmarks:
-                if draw:
-                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
+    def find_hands(self, img, draw=True):
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+        ts = int(time.monotonic() * 1000)
+        if ts <= self._lastTs:  # timestamps must strictly increase
+            ts = self._lastTs + 1
+        self._lastTs = ts
+        self.results = self.landmarker.detect_for_video(mp_image, ts)
+
+        if draw and self.results.hand_landmarks:
+            h, w, _ = img.shape
+            for hand in self.results.hand_landmarks:
+                pts = [(int(lm.x * w), int(lm.y * h)) for lm in hand]
+                for a, b in HAND_CONNECTIONS:
+                    cv2.line(img, pts[a], pts[b], (0, 255, 0), 2)
+                for p in pts:
+                    cv2.circle(img, p, 4, (0, 0, 255), cv2.FILLED)
 
         return img
 
     def findPosition(self, img, handNum=0, draw=True):
         self.lmList = []
 
-        if self.results.multi_hand_landmarks:
-            myHand = self.results.multi_hand_landmarks[handNum]
-            for id, lm in enumerate(myHand.landmark):
+        if self.results and self.results.hand_landmarks and len(self.results.hand_landmarks) > handNum:
+            myHand = self.results.hand_landmarks[handNum]
+            for id, lm in enumerate(myHand):
                 # print(id, lm);
                 h, w, c = img.shape
                 cx, cy = int(lm.x * w), int(lm.y * h)
