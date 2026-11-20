@@ -10,6 +10,7 @@ folderPath = "images"
 myList = os.listdir(folderPath)
 
 brushThickness = 12
+TOOLBAR_SLOTS = 9
 
 overlayList = []
 thicknessOptions = [5, 10, 15, 20, 25]
@@ -96,37 +97,38 @@ def update_frame():
 
         if showOptions:
             if y1 < 146:
-                if 37 < x1 < 130:
+                # Toolbar is split into 9 equal slots (see images/*.png)
+                slot = int(x1 // (1280 / TOOLBAR_SLOTS))
+                if slot == 0:
                     shapeType = ShapeEllipse
                     drawShape = True
                     header = overlayList[1]
-                elif 170 < x1 < 276:
+                elif slot == 1:
                     shapeType = ShapeCircle
                     drawShape = True
                     header = overlayList[2]
-                elif 302 < x1 < 439:
+                elif slot == 2:
                     shapeType = ShapeRectangle
                     drawShape = True
                     header = overlayList[3]
-                elif 470 < x1 < 560:
+                elif slot == 3:
                     shapeType = ShapeSquare
                     drawShape = True
                     header = overlayList[4]
-                elif 594 < x1 < 757:
+                elif slot == 4:
                     drawColor = colors["Red"]
                     header = overlayList[5]
-                elif 773 < x1 < 936:
+                elif slot == 5:
                     drawColor = colors["Yellow"]
                     header = overlayList[6]
-                elif 961 < x1 < 1119:
+                elif slot == 6:
                     drawColor = colors["Purple"]
                     header = overlayList[7]
-                elif 1126 < x1 < 1264:
+                elif slot == 7:
                     drawColor = colors["Black"]
                     header = overlayList[8]
-
-            if 1240 - 40 < x1 < 1240 + 40 and 186 - 40 < y1 < 186 + 40:
-                imgCanvas = np.zeros((720, 1280, 3), np.uint8)
+                elif slot == 8:
+                    imgCanvas = np.zeros((720, 1280, 3), np.uint8)
 
         # Drawing shapes or freehand
         if fingers[1] and not fingers[2]:
@@ -204,8 +206,6 @@ def update_frame():
                 header = overlayList[0]
 
     img = cv2.add(img, imgCanvas)
-    cv2.circle(img, (window_width - 55, 210), 50, (0, 0, 255), -1)
-    cv2.putText(img, "Clean", (window_width - 90, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
     # Convert the frame to a format Tkinter can display
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

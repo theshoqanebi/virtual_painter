@@ -11,7 +11,7 @@
 - Freehand drawing with your index finger
 - Shape tools: ellipse, circle, rectangle and square
 - Four colors: red, yellow, purple and black (black works as an eraser)
-- One-gesture canvas clear with the Clean button
+- One-gesture canvas clear from the toolbar
 - Live hand tracking overlaid on the camera feed
 
 ## Gestures
