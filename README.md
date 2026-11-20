@@ -28,13 +28,13 @@ Requirements: Python 3.10+ and a webcam.
 
 ```
 pip install -r requirements.txt
-python VirtualPainter.py
+python main.py
 ```
 
 ## Project Structure
 
 ```
-VirtualPainter.py        Application window, toolbar and drawing logic
+main.py                  Application window, toolbar and drawing logic
 HandTrackingModule.py    MediaPipe hand detector wrapper
 images/                  Toolbar images and app icon
 requirements.txt         Python dependencies
